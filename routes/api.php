@@ -22,7 +22,24 @@ use Illuminate\Support\Facades\Route;
 // Route::delete('/users/{id}','UserController@destroy');
 
 
-Route::apiResource('users','UserController');
-
-
 Route::post('login','AuthController@login');
+Route::post('register','AuthController@register');
+
+
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::apiResource('users','UserController');
+
+    Route::get('user','UserController@user');
+    Route::put('user/info','UserController@updateInfo');
+    Route::put('user/password','UserController@updatePassword');
+
+    Route::resource('roles','RoleController');
+    Route::resource('products', 'ProductController');
+    Route::post('upload','ImageController@upload');
+
+    Route::resource('orders', 'OrderController')->only(['index','show']);
+
+});
+
+
+
