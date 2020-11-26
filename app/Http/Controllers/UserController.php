@@ -10,32 +10,34 @@ use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Resources\UserResource;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
     public function index(){
+        Gate::authorize('view','users');
 
         $users = User::with('role')->paginate();
         return UserResource::collection($users);
     }
 
     public function show($id){
+        Gate::authorize('view','users');
         $user = User::find($id);
 
         return new UserResource($user);
     }
 
     public function store(UserCreateRequest $request){
-        // $data = $request->except('password');
-        // $data['password'] = Hash::make('123');
-        // $user = User::create($data);
+        Gate::authorize('edit','users');
         $user = User::create($request->only(['first_name','last_name','email','role_id']) + ['password'=> Hash::make($request->password)]);
 
         return response(new UserResource($user), Response::HTTP_CREATED);
     }
 
     public function update(UserUpdateRequest $request, $id){
+        Gate::authorize('edit','users');
         $user = User::findOrFail($id);
         $user->update($request->only(['first_name','last_name','email','role_id']));
 
@@ -43,6 +45,7 @@ class UserController extends Controller
     }
 
     public function destroy($id){
+        Gate::authorize('edit','users');
         $user = User::findOrFail($id);
         $user->delete();
 
@@ -52,7 +55,11 @@ class UserController extends Controller
     public function user(){
         $user = auth()->user();
 
-        return response(new UserResource($user), Response::HTTP_OK);
+        return (new UserResource($user))->additional([
+            'data'  => [
+                'permissions' => $user->permissions()
+            ]
+        ]);
     }
 
     public function updateInfo(UpdateInfoRequest $request){

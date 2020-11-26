@@ -8,7 +8,7 @@ use App\Http\Resources\ProductResource;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use Symfony\Component\HttpFoundation\Response;
-
+use Gate;
 class ProductController extends Controller
 {
     /**
@@ -18,6 +18,7 @@ class ProductController extends Controller
      */
     public function index()
     {
+        Gate::authorize('view','products');
         $products = Product::paginate();
         return ProductResource::collection($products);
     }
@@ -30,7 +31,7 @@ class ProductController extends Controller
      */
     public function store(ProductCreateRequest $request)
     {
-
+        Gate::authorize('edit','products');
         $product = Product::create($request->only(['title','description','price','image']));
         return response(new ProductResource($product), Response::HTTP_CREATED);
     }
@@ -43,6 +44,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        Gate::authorize('view','products');
         return response(new ProductResource($product));
     }
 
@@ -55,6 +57,7 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product)
     {
+        Gate::authorize('edit','products');
         $product->update($request->only(['title','description','price','image']));
 
         return response(new ProductResource($product), Response::HTTP_ACCEPTED);
@@ -68,6 +71,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        Gate::authorize('edit','products');
         $product->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);

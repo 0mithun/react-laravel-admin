@@ -20,4 +20,8 @@ class Order extends Model
             return $orderItem->price * $orderItem->quantity;
         }));
     }
+
+    public function getNameAtttribute(){
+        return ucwords($this->first_name." ".$this->last_name);
+    }
 }
