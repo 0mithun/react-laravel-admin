@@ -42,6 +42,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::resource('permissions', 'PermissionController')->only(['index']);
 
+    Route::get('chart','DashboardController@chart');
+
 });
 
 
