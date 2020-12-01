@@ -132,7 +132,7 @@ class UserEdit extends Component<{match: PropsWithRef<any>}> {
           </div>
 
           <button className="btn btn-lg btn-primary btn-block" type="submit">
-            Register
+            Update
           </button>
         </form>
       </Wrapper>
