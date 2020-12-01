@@ -29,4 +29,10 @@ class AuthController extends Controller
 
         return response($user, Response::HTTP_CREATED);
     }
+
+    public function logout(Request $request){
+        Auth::logout();
+        $request->session()->invalidate();
+        return response(null, Response::HTTP_NO_CONTENT);
+    }
 }

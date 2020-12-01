@@ -35,12 +35,7 @@ class RoleController extends Controller
         $role = Role::create($request->only('name'));
 
         if($permissions = $request->permissions){
-            foreach($permissions as $permission_id){
-                DB::insert([
-                    'role_id'   => $role->id,
-                    'permission_id'=> $permission_id,
-                ]);
-            }
+            $role->permissions()->sync($permissions);
         }
 
         return response(new RoleResource($role), Response::HTTP_ACCEPTED);
@@ -71,14 +66,8 @@ class RoleController extends Controller
         $role->update($request->only('name'));
 
         DB::table('role_permission')->where('role_id', $role->id)->delete();
-
         if($permissions = $request->permissions){
-            foreach($permissions as $permission_id){
-                DB::insert([
-                    'role_id'   => $role->id,
-                    'permission_id'=> $permission_id,
-                ]);
-            }
+            $role->permissions()->sync($permissions);
         }
 
         return response(new RoleResource($role), Response::HTTP_ACCEPTED);
