@@ -1,32 +1,50 @@
-import React from "react";
+import React, { Component } from 'react';
 import Wrapper from '../Wrapper';
+import c3 from 'c3'
+import axios from 'axios';
 
-const Dashboard = () => (
-  <Wrapper>
-    <h2>Section title</h2>
-    <div className="table-responsive">
-      <table className="table table-striped table-sm">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Header</th>
-            <th>Header</th>
-            <th>Header</th>
-            <th>Header</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1,001</td>
-            <td>Lorem</td>
-            <td>ipsum</td>
-            <td>dolor</td>
-            <td>sit</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </Wrapper>
-);
+class Dashboard extends Component {
+    componentDidUpdate = async ()=>{
+        let chart = c3.generate({
+            bindto:'#chart',
+            data:{
+                x: 'x',
+                columns: [
+                    ['x'],
+                    ['Sales']
+                ],
+                types: {
+                    Sales: 'bar'
+                }
+            },
+            axis: {
+                x: {
+                    type: 'timeseries',
+                    tick:{
+                        format: '%Y-%m-%d'
+                    }
+                }
+            }
+        });
+
+        const response = await axios.get('chart');
+        const records: {date: string, sum:number}[] = response.data;
+
+        chart.load({
+            columns:[
+                ['x',...records.map(r=>r.date)],
+                ['Sales',...records.map(r=>r.sum)]
+            ]
+        })
+    }
+    render() {
+        return (
+            <Wrapper>
+                <h2>Daily Sales</h2>
+                <div id="chart"></div>
+            </Wrapper>
+        );
+    }
+}
 
 export default Dashboard;

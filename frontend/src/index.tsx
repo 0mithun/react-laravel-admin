@@ -3,13 +3,26 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+
+
 import axios from "axios";
+import configureStore from './redux/configureStore';
+import {Provider} from 'react-redux'
+
+
+
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api/';
 axios.defaults.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
 
+
+const store = configureStore();
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+      <Provider store={store}>
+
+        <App />
+      </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );

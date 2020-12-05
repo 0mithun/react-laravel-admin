@@ -3,8 +3,11 @@ import Wrapper from '../Wrapper';
 import axios from 'axios';
 import { User } from '../../classes/user';
 import { Link } from 'react-router-dom';
+import Paginator from '../components/Paginator';
+import Deletor from '../components/Deletor';
+import { connect } from 'react-redux';
 
-class Users extends Component {
+class Users extends Component<{user: User}> {
     state  = {
         users: []
     }
@@ -20,38 +23,41 @@ class Users extends Component {
         }
     }
 
-    next = async ()=>{
-        if(this.page === this.last_page) return;
-        this.page = this.page + 1;
-        await this.componentDidMount()
-
+    handlePageChange = async (page: number)=>{
+        this.page = page;
+        await this.componentDidMount();
+    }
+    handleDelete = async ()=>{
+        await this.componentDidMount();
     }
 
-    previous = async ()=>{
-        if(this.page === 1) return;
-        this.page = this.page - 1;
-        await this.componentDidMount()
-    }
+    actions = (id: number)=>{
 
-    deleteUser = async (id: number)=>{
-        if(window.confirm("Are you sure to delete this record ?")){
-            try {
-                await axios.delete(`users/${id}`)
-               await this.componentDidMount();
-            } catch (error) {
-                console.log(error)
-            }
+        if(this.props.user.canEdit('users')){
+            return (
+                <div className="btn-group mr-2">
+                    <Link to={`/users/${id}/edit`} href="#" className="btn btn-sm btn-outline-secondary">Edit</Link>
+                    <Deletor id={id} endpoint={'users'} handleDelete={this.handleDelete} />
+                </div>
+            )
         }
     }
 
     render() {
-        return (
-            <Wrapper>
+        let addButton = null
+        if(this.props.user.canEdit('users')){
+            addButton = (
                 <div className="d-flex justify-content-between pt-3 pb-2 border-bottom flex-wrap flex-md-nowrap align-items-center mb-3">
                     <div className="btn-toolbar mb-2 md-mb-0">
                         <Link to={'/users/create'}  className="btn btn-sm btn-outline-secondary">Add</Link>
                     </div>
                 </div>
+            )
+        }
+
+        return (
+            <Wrapper>
+                {addButton}
                 <div className="table-responsive">
                     <table className="table table-striped table-sm">
                         <thead>
@@ -72,10 +78,7 @@ class Users extends Component {
                                         <td>{user.email}</td>
                                         <td>{user.role.name}</td>
                                         <td>
-                                            <div className="btn-group mr-2">
-                                                <Link to={`/users/${user.id}/edit`} href="#" className="btn btn-sm btn-outline-secondary">Edit</Link>
-                                                <a href="#" className="btn btn-sm btn-outline-secondary" onClick={()=> this.deleteUser(user.id)}>Delete</a>
-                                            </div>
+                                           {this.actions(user.id)}
                                         </td>
                                     </tr>
                                 )
@@ -84,21 +87,12 @@ class Users extends Component {
                         </tbody>
                     </table>
                 </div>
-                <nav>
-                    <ul className="pagination">
-                        <li className="page-item">
-
-                            <a href="#" className="page-link" onClick={this.previous}>Previous</a>
-                        </li>
-
-                        <li className="page-item">
-                            <a href="#" className="page-link" onClick={this.next}>Next </a>
-                        </li>
-                    </ul>
-                </nav>
+                <Paginator lastPage={this.last_page} handlePageChange={this.handlePageChange}></Paginator>
             </Wrapper>
         );
     }
 }
 
-export default Users;
+// @ts-ignore
+
+export default connect(state => ({user: state.user})) (Users);

@@ -4,24 +4,19 @@ import { Link } from 'react-router-dom';
 import Wrapper from '../Wrapper';
 import axios from 'axios';
 import { Role } from '../../classes/role';
+import Deletor from '../components/Deletor';
+import { User } from '../../classes/user';
+import { connect } from 'react-redux';
 
 
-class roles extends Component {
+class roles extends Component<{user: User}> {
     state = {
         roles: []
     }
 
-     delete = async (id: number)=>{
-        if(window.confirm('Are you sure to delete this record?')){
-            try {
-                await axios.delete(`/roles/${id}`)
-                await this.componentDidMount();
-            } catch (error) {
-                console.log(error)
-            }
-        }
+    handleDelete = async ()=>{
+        await this.componentDidMount();
     }
-
     componentDidMount = async ()=>{
         try {
             const response = await axios.get('roles');
@@ -32,15 +27,33 @@ class roles extends Component {
     }
 
 
+    actions = (id: number)=>{
+        if(this.props.user.canEdit('roles')){
+            return (
+                <div className="btn-group mr-2">
+                    <Link to={`/roles/${id}/edit`} href="#" className="btn btn-sm btn-outline-secondary">Edit</Link>
+                    <Deletor id={id} endpoint={'roles'} handleDelete={this.handleDelete} />
+                </div>
+            )
+        }
+    }
+
 
     render() {
+
+        let addButton = null
+        if(this.props.user.canEdit('roles')){
+            addButton = (
+                <div className="d-flex justify-content-between pt-3 pb-2 border-bottom flex-wrap flex-md-nowrap align-items-center mb-3">
+                    <div className="btn-toolbar mb-2 md-mb-0">
+                        <Link to={'/roles/create'}  className="btn btn-sm btn-outline-secondary">Add</Link>
+                    </div>
+                </div>
+            )
+        }
         return (
             <Wrapper>
-            <div className="d-flex justify-content-between pt-3 pb-2 border-bottom flex-wrap flex-md-nowrap align-items-center mb-3">
-                <div className="btn-toolbar mb-2 md-mb-0">
-                    <Link to={'/roles/create'}  className="btn btn-sm btn-outline-secondary">Add</Link>
-                </div>
-            </div>
+                {addButton}
             <div className="table-responsive">
                 <table className="table table-striped table-sm">
                     <thead>
@@ -57,10 +70,7 @@ class roles extends Component {
                                     <td>{role.id}</td>
                                     <td>{role.name}</td>
                                     <td>
-                                        <div className="btn-group">
-                                            <Link to={`/roles/${role.id}/edit`} className="btn btn-sm btn-outline-secondary">Edit</Link>
-                                            <a className="btn btn-sm btn-outline-secondary" onClick={()=> this.delete(role.id)}>Delete</a>
-                                        </div>
+                                        {this.actions(role.id)}
                                     </td>
                                 </tr>
                             )
@@ -73,4 +83,6 @@ class roles extends Component {
     }
 }
 
-export default roles;
+
+// @ts-ignore
+export default connect(state => ({user: state.user})) (roles);
